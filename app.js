@@ -1,4 +1,7 @@
-// IWANTAGF.COM - Frontend Logic
+// IWANTAGF.COM - Frontend with Vercel API Integration
+
+// API Configuration
+const API_URL = 'https://iwantagf-api.vercel.app';
 
 // DOM Elements
 const loginScreen = document.getElementById('loginScreen');
@@ -9,73 +12,129 @@ const messageInput = document.getElementById('messageInput');
 
 // State
 let currentUser = null;
-let messages = [
-    { role: 'assistant', content: "Hey there! 😊 I've been waiting for you." }
-];
+let currentConversation = null;
+let authToken = null;
 
 // Login Handler
-loginForm.addEventListener('submit', (e) => {
+loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     
-    // TODO: Replace with actual Supabase auth
-    console.log('Login attempt:', email);
-    
-    // Mock login success
-    currentUser = { email, id: '123' };
-    showChat();
+    try {
+        const response = await fetch(`${API_URL}/api/auth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'login', email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            currentUser = data.user;
+            authToken = data.session.access_token;
+            // Create or get conversation
+            currentConversation = 'default-conv-id'; // TODO: Get from backend
+            showChat();
+            loadHistory();
+        } else {
+            alert('Login failed: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed. Check console.');
+    }
 });
 
 // Show Chat Screen
 function showChat() {
     loginScreen.classList.add('hidden');
     chatScreen.classList.remove('hidden');
-    renderMessages();
 }
 
 // Logout
 function logout() {
     currentUser = null;
+    authToken = null;
+    currentConversation = null;
     loginScreen.classList.remove('hidden');
     chatScreen.classList.add('hidden');
 }
 
-// Send Message
-function sendMessage() {
-    const text = messageInput.value.trim();
-    if (!text) return;
+// Load Conversation History
+async function loadHistory() {
+    if (!currentConversation) return;
     
-    // Add user message
-    messages.push({ role: 'user', content: text });
-    renderMessages();
-    messageInput.value = '';
-    
-    // Simulate AI typing
-    showTyping();
-    
-    // TODO: Replace with actual API call to backend
-    setTimeout(() => {
-        removeTyping();
-        const reply = generateReply(text);
-        messages.push({ role: 'assistant', content: reply });
-        renderMessages();
-    }, 1500);
+    try {
+        const response = await fetch(`${API_URL}/api/history?conversationId=${currentConversation}`);
+        const data = await response.json();
+        
+        if (response.ok && data.messages) {
+            renderMessages(data.messages);
+        }
+    } catch (error) {
+        console.error('Load history error:', error);
+    }
 }
 
-// Generate Mock Reply (replace with actual AI)
-function generateReply(userMessage) {
-    const replies = [
-        "That's so interesting! Tell me more 💕",
-        "I love hearing about your day! 😊",
-        "You're making me smile! 🥰",
-        "I wish I was there with you right now 💭",
-        "That sounds amazing! I'm proud of you ✨",
-        "You're so sweet! 💕",
-        "I'm always here for you, you know that right? 🤗",
-        "Tell me everything, I'm listening 💭"
-    ];
-    return replies[Math.floor(Math.random() * replies.length)];
+// Send Message
+async function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text || !currentUser) return;
+    
+    // Add user message to UI immediately
+    addMessageToUI('user', text);
+    messageInput.value = '';
+    
+    // Show typing
+    showTyping();
+    
+    try {
+        const response = await fetch(`${API_URL}/api/chat`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                message: text,
+                userId: currentUser.id,
+                conversationId: currentConversation
+            })
+        });
+        
+        removeTyping();
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            addMessageToUI('assistant', data.reply);
+        } else {
+            addMessageToUI('assistant', 'Sorry, I had trouble responding. Try again?');
+            console.error('Chat error:', data.error);
+        }
+    } catch (error) {
+        removeTyping();
+        addMessageToUI('assistant', 'Connection error. Please check your internet.');
+        console.error('Send error:', error);
+    }
+}
+
+// Add Message to UI
+function addMessageToUI(role, content) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role}`;
+    messageDiv.innerHTML = `<div class="message-content">${escapeHtml(content)}</div>`;
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Render Messages
+function renderMessages(messages) {
+    chatMessages.innerHTML = '';
+    messages.forEach(msg => {
+        addMessageToUI(msg.role, msg.content);
+    });
 }
 
 // Show Typing Indicator
@@ -83,7 +142,7 @@ function showTyping() {
     const typingDiv = document.createElement('div');
     typingDiv.className = 'message ai typing';
     typingDiv.id = 'typingIndicator';
-    typingDiv.innerHTML = '<div class="message-content">Typing...</div>';
+    typingDiv.innerHTML = '<div class="message-content">Luna is typing...</div>';
     chatMessages.appendChild(typingDiv);
     scrollToBottom();
 }
@@ -94,19 +153,16 @@ function removeTyping() {
     if (typing) typing.remove();
 }
 
-// Render Messages
-function renderMessages() {
-    chatMessages.innerHTML = messages.map(msg => `
-        <div class="message ${msg.role === 'user' ? 'user' : 'ai'}">
-            <div class="message-content">${msg.content}</div>
-        </div>
-    `).join('');
-    scrollToBottom();
-}
-
 // Scroll to Bottom
 function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Enter Key Handler
@@ -116,5 +172,4 @@ messageInput.addEventListener('keypress', (e) => {
 
 // Initialize
 console.log('IWANTAGF.COM loaded');
-console.log('TODO: Connect to Supabase backend');
-console.log('TODO: Connect to Replicate LLM');
+console.log('API URL:', API_URL);
