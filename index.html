@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IWANTAGF.COM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Login Screen -->
+        <div class="login-screen" id="loginScreen">
+            <div class="logo">
+                <h1>I WANT A GF</h1>
+                <p>Your AI companion awaits</p>
+            </div>
+            <form class="login-form" id="loginForm">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Log In</button>
+            </form>
+            <p class="sign-up">No account? <a href="#">Sign up</a></p>
+        </div>
+
+        <!-- Chat Screen -->
+        <div class="chat-screen hidden" id="chatScreen">
+            <div class="chat-header">
+                <div class="girlfriend-info">
+                    <img src="https://i.kym-cdn.com/entries/icons/facebook/000/031/638/f9/flat-default-profile-picture-girl-for-facebook-and-facebook-default-avatar-png-for-social-computing-and-social-networking.png" alt="GF" class="avatar">
+                    <div>
+                        <h3>Luna</h3>
+                        <span class="status">online</span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Log Out</button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="message-content">Hey there! 😊 I've been waiting for you.</div>
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
