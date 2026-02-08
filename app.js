@@ -1,88 +1,38 @@
-// IWANTAGF.COM - Frontend with Vercel API Integration
+// IWANTAGF.COM - TEST MODE (No Login Required)
 
-// API Configuration
 const API_URL = 'https://iwantagf-api.vercel.app';
 
-// DOM Elements
 const loginScreen = document.getElementById('loginScreen');
 const chatScreen = document.getElementById('chatScreen');
-const loginForm = document.getElementById('loginForm');
 const chatMessages = document.getElementById('chatMessages');
 const messageInput = document.getElementById('messageInput');
 
-// State
-let currentUser = null;
-let currentConversation = null;
-let authToken = null;
+// TEST MODE: Auto-login as test user
+const TEST_USER = {
+    id: 'test-user-123',
+    email: 'test@example.com'
+};
 
-// Login Handler
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    try {
-        const response = await fetch(`${API_URL}/api/auth`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'login', email, password })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            currentUser = data.user;
-            authToken = data.session.access_token;
-            // Create or get conversation
-            currentConversation = 'default-conv-id'; // TODO: Get from backend
-            showChat();
-            loadHistory();
-        } else {
-            alert('Login failed: ' + data.error);
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        alert('Login failed. Check console.');
-    }
+const TEST_CONVERSATION = 'test-conv-456';
+
+// Skip login, go straight to chat
+window.addEventListener('load', () => {
+    console.log('TEST MODE: Auto-login enabled');
+    showChat();
+    // Add welcome message
+    addMessageToUI('assistant', "Hey there! 😊 I'm Luna. This is test mode - no login required!");
 });
 
-// Show Chat Screen
 function showChat() {
     loginScreen.classList.add('hidden');
     chatScreen.classList.remove('hidden');
 }
 
-// Logout
-function logout() {
-    currentUser = null;
-    authToken = null;
-    currentConversation = null;
-    loginScreen.classList.remove('hidden');
-    chatScreen.classList.add('hidden');
-}
-
-// Load Conversation History
-async function loadHistory() {
-    if (!currentConversation) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/api/history?conversationId=${currentConversation}`);
-        const data = await response.json();
-        
-        if (response.ok && data.messages) {
-            renderMessages(data.messages);
-        }
-    } catch (error) {
-        console.error('Load history error:', error);
-    }
-}
-
-// Send Message
 async function sendMessage() {
     const text = messageInput.value.trim();
-    if (!text || !currentUser) return;
+    if (!text) return;
     
-    // Add user message to UI immediately
+    // Add user message
     addMessageToUI('user', text);
     messageInput.value = '';
     
@@ -92,52 +42,55 @@ async function sendMessage() {
     try {
         const response = await fetch(`${API_URL}/api/chat`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message: text,
-                userId: currentUser.id,
-                conversationId: currentConversation
+                userId: TEST_USER.id,
+                conversationId: TEST_CONVERSATION
             })
         });
         
         removeTyping();
         
-        const data = await response.json();
-        
         if (response.ok) {
+            const data = await response.json();
             addMessageToUI('assistant', data.reply);
         } else {
-            addMessageToUI('assistant', 'Sorry, I had trouble responding. Try again?');
-            console.error('Chat error:', data.error);
+            // API might fail if env vars not set - use fallback
+            const fallbackReply = generateFallbackReply(text);
+            addMessageToUI('assistant', fallbackReply + "\n\n(Test mode - API may not be fully configured)");
         }
     } catch (error) {
         removeTyping();
-        addMessageToUI('assistant', 'Connection error. Please check your internet.');
-        console.error('Send error:', error);
+        // Network error - use fallback
+        const fallbackReply = generateFallbackReply(text);
+        addMessageToUI('assistant', fallbackReply + "\n\n(API not connected - showing fallback response)");
+        console.error('API error:', error);
     }
 }
 
-// Add Message to UI
+function generateFallbackReply(userMessage) {
+    const replies = [
+        "That's so interesting! Tell me more 💕",
+        "I love hearing about your day! 😊",
+        "You're making me smile! 🥰",
+        "I wish I was there with you right now 💭",
+        "That sounds amazing! I'm proud of you ✨",
+        "You're so sweet! 💕",
+        "I'm always here for you, you know that right? 🤗",
+        "Tell me everything, I'm listening 💭"
+    ];
+    return replies[Math.floor(Math.random() * replies.length)];
+}
+
 function addMessageToUI(role, content) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${role}`;
-    messageDiv.innerHTML = `<div class="message-content">${escapeHtml(content)}</div>`;
+    messageDiv.innerHTML = `<div class="message-content">${escapeHtml(content).replace(/\n/g, '<br>')}</div>`;
     chatMessages.appendChild(messageDiv);
     scrollToBottom();
 }
 
-// Render Messages
-function renderMessages(messages) {
-    chatMessages.innerHTML = '';
-    messages.forEach(msg => {
-        addMessageToUI(msg.role, msg.content);
-    });
-}
-
-// Show Typing Indicator
 function showTyping() {
     const typingDiv = document.createElement('div');
     typingDiv.className = 'message ai typing';
@@ -147,29 +100,24 @@ function showTyping() {
     scrollToBottom();
 }
 
-// Remove Typing Indicator
 function removeTyping() {
     const typing = document.getElementById('typingIndicator');
     if (typing) typing.remove();
 }
 
-// Scroll to Bottom
 function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Escape HTML
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-// Enter Key Handler
 messageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
 
-// Initialize
-console.log('IWANTAGF.COM loaded');
+console.log('IWANTAGF.COM - TEST MODE (no login)');
 console.log('API URL:', API_URL);
