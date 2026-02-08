@@ -1,0 +1,224 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app {
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    max-height: 800px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Login Screen */
+.login-screen {
+    padding: 40px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo h1 {
+    font-size: 32px;
+    color: #667eea;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.logo p {
+    color: #666;
+    margin-bottom: 40px;
+}
+
+.login-form {
+    width: 100%;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.login-form button:hover {
+    transform: translateY(-2px);
+}
+
+.sign-up {
+    margin-top: 20px;
+    color: #666;
+}
+
+.sign-up a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Chat Screen */
+.chat-screen {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-screen.hidden {
+    display: none;
+}
+
+.chat-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.girlfriend-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid white;
+    object-fit: cover;
+}
+
+.girlfriend-info h3 {
+    font-size: 18px;
+}
+
+.status {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.status::before {
+    content: "●";
+    color: #4ade80;
+    margin-right: 5px;
+}
+
+.logout-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f5f5f5;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+}
+
+.message.ai {
+    margin-right: auto;
+}
+
+.message.user {
+    margin-left: auto;
+}
+
+.message-content {
+    padding: 12px 16px;
+    border-radius: 20px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.message.ai .message-content {
+    background: white;
+    color: #333;
+    border-bottom-left-radius: 5px;
+}
+
+.message.user .message-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.chat-input {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    font-size: 15px;
+    outline: none;
+}
+
+.chat-input input:focus {
+    border-color: #667eea;
+}
+
+.chat-input button {
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+}
